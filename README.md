@@ -25,5 +25,4 @@ This app uses the **MediaRecorder API** and **getDisplayMedia()** to capture you
 You can simply clone or download this repo and run the HTML file:
 
 ```bash
-git clone https://github.com/your-username/pro-hd-screen-recorder.git
-cd pro-hd-screen-recorder
+https://github.com/Tarekuzjaman0/Screen-Recorder.git
