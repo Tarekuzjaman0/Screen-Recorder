@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pro HD Screen Recorder</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .btn, select {
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease;
+      min-width: 150px;
+    }
+
+    .btn:hover, select:hover {
+      transform: scale(1.05);
+    }
+
+    #startBtn { background-color: #28a745; color: #fff; }
+    #stopBtn { background-color: #dc3545; color: #fff; }
+    #audioToggle { background-color: #007bff; color: #fff; }
+
+    #timer {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 15px 0;
+    }
+
+    video {
+      width: 100%;
+      max-width: 800px;
+      margin-top: 20px;
+      display: none;
+      border: 4px solid #fff;
+      border-radius: 12px;
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.25);
+    }
+
+    @media (max-width: 500px) {
+      .btn, select {
+        font-size: 14px;
+        padding: 10px 16px;
+        min-width: 130px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      #timer {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎥 Pro HD Screen Recorder</h1>
+
+  <div class="controls">
+    <select id="audioSource">
+      <option value="mic">🎙️ Microphone</option>
+      <option value="system">💻 System Audio</option>
+    </select>
+
+    <button class="btn" id="audioToggle">🔇 Mute Audio</button>
+    <button class="btn" id="startBtn">▶️ Start Recording</button>
+    <button class="btn" id="stopBtn" disabled>⏹️ Stop Recording</button>
+  </div>
+
+  <div id="timer">🕒 Duration: 00:00</div>
+  <video id="preview" controls></video>
+
+  <script>
+    let mediaRecorder;
+    let recordedChunks = [];
+    let isAudioEnabled = true;
+    let startTime;
+    let timerInterval;
+
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const audioToggle = document.getElementById('audioToggle');
+    const timer = document.getElementById('timer');
+    const audioSource = document.getElementById('audioSource');
+    const preview = document.getElementById('preview');
+
+    audioToggle.onclick = () => {
+      isAudioEnabled = !isAudioEnabled;
+      audioToggle.textContent = isAudioEnabled ? '🔇 Mute Audio' : '🔊 Unmute Audio';
+    };
+
+    startBtn.onclick = async () => {
+      const audioChoice = audioSource.value;
+
+      const displayStream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          frameRate: { ideal: 60 }
+        },
+        audio: audioChoice === 'system'
+      });
+
+      let finalStream = displayStream;
+
+      if (audioChoice === 'mic' && isAudioEnabled) {
+        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mixedTracks = [
+          ...displayStream.getVideoTracks(),
+          ...micStream.getAudioTracks()
+        ];
+        finalStream = new MediaStream(mixedTracks);
+      }
+
+      const options = {
+        mimeType: 'video/webm; codecs=vp9',
+        videoBitsPerSecond: 5_000_000
+      };
+
+      mediaRecorder = new MediaRecorder(finalStream, options);
+      recordedChunks = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) recordedChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        clearInterval(timerInterval);
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+
+        preview.src = url;
+        preview.style.display = 'block';
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'pro_screen_recording_HD.webm';
+        a.click();
+      };
+
+      mediaRecorder.start();
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      startTimer();
+    };
+
+    stopBtn.onclick = () => {
+      mediaRecorder.stop();
+      stopBtn.disabled = true;
+      startBtn.disabled = false;
+    };
+
+    function startTimer() {
+      startTime = Date.now();
+      timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        const seconds = String(elapsed % 60).padStart(2, '0');
+        timer.textContent = `🕒 Duration: ${minutes}:${seconds}`;
+      }, 1000);
+    }
+  </script>
+
+</body>
+</html>
