@@ -5,6 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pro HD Screen Recorder</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    :root {
+      --primary: #6200ea;
+      --accent: #03dac6;
+      --error: #cf6679;
+      --background: #121212;
+      --surface: #1f1f1f;
+      --text: #ffffff;
+      --shadow: rgba(0, 0, 0, 0.5);
+    }
+
+    [data-theme="light"] {
+      --primary: #6200ea;
+      --accent: #018786;
+      --error: #b00020;
+      --background: #ffffff;
+      --surface: #f1f1f1;
+      --text: #000000;
+      --shadow: rgba(0, 0, 0, 0.2);
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -12,99 +34,144 @@
     }
 
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-      color: #fff;
-      padding: 30px 20px;
+      font-family: 'Poppins', sans-serif;
+      background: var(--background);
+      color: var(--text);
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: flex-start;
       min-height: 100vh;
+      padding: 40px 20px;
+      overflow-x: hidden;
+      transition: background 0.4s, color 0.4s;
     }
 
     h1 {
-      font-size: 2.2rem;
-      margin-bottom: 30px;
+      font-size: 2.5rem;
+      color: var(--accent);
+      margin-bottom: 20px;
       text-align: center;
+      animation: fadeInDown 0.8s ease;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+
+    .card {
+      background-color: var(--surface);
+      border-radius: 20px;
+      padding: 30px 20px;
+      box-shadow: 0 10px 30px var(--shadow);
+      max-width: 500px;
+      width: 100%;
+      animation: fadeIn 1s ease;
     }
 
     .controls {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 20px;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 25px;
     }
 
     .btn, select {
-      padding: 12px 20px;
+      padding: 14px;
       font-size: 16px;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-      transition: transform 0.3s ease;
-      min-width: 150px;
+      background-color: var(--primary);
+      color: var(--text);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px var(--shadow);
     }
 
     .btn:hover, select:hover {
-      transform: scale(1.05);
+      background-color: var(--accent);
+      color: #000;
+      transform: translateY(-2px);
     }
 
-    #startBtn { background-color: #28a745; color: #fff; }
-    #stopBtn { background-color: #dc3545; color: #fff; }
-    #audioToggle { background-color: #007bff; color: #fff; }
+    #stopBtn { background-color: var(--error); }
+    #audioToggle { background-color: var(--accent); color: #000; }
 
     #timer {
+      text-align: center;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: var(--accent);
       font-size: 18px;
-      font-weight: bold;
-      margin: 15px 0;
     }
 
     video {
-      width: 100%;
-      max-width: 800px;
-      margin-top: 20px;
       display: none;
-      border: 4px solid #fff;
-      border-radius: 12px;
-      box-shadow: 0 0 25px rgba(255, 255, 255, 0.25);
+      margin-top: 20px;
+      width: 100%;
+      border-radius: 16px;
+      border: 3px solid var(--accent);
+      box-shadow: 0 0 25px var(--shadow);
+      animation: fadeIn 1s ease;
     }
 
-    @media (max-width: 500px) {
-      .btn, select {
-        font-size: 14px;
-        padding: 10px 16px;
-        min-width: 130px;
-      }
+    .download-btn {
+      display: none;
+      margin-top: 15px;
+      padding: 12px;
+      font-size: 16px;
+      background-color: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px var(--shadow);
+    }
 
-      h1 {
-        font-size: 1.5rem;
-      }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-      #timer {
-        font-size: 16px;
-      }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.8rem; }
+      .btn, select, .download-btn { font-size: 14px; }
     }
   </style>
 </head>
-<body>
+<body data-theme="dark">
+
+  <button class="theme-toggle" onclick="toggleTheme()">🌙 Toggle Theme</button>
 
   <h1>🎥 Pro HD Screen Recorder</h1>
-
-  <div class="controls">
-    <select id="audioSource">
-      <option value="mic">🎙️ Microphone</option>
-      <option value="system">💻 System Audio</option>
-    </select>
-
-    <button class="btn" id="audioToggle">🔇 Mute Audio</button>
-    <button class="btn" id="startBtn">▶️ Start Recording</button>
-    <button class="btn" id="stopBtn" disabled>⏹️ Stop Recording</button>
+  <div class="card">
+    <div class="controls">
+      <select id="audioSource">
+        <option value="mic">🎙️ Microphone</option>
+        <option value="system">💻 System Audio</option>
+      </select>
+      <button class="btn" id="audioToggle">🔇 Mute Audio</button>
+      <button class="btn" id="startBtn">▶️ Start Recording</button>
+      <button class="btn" id="stopBtn" disabled>⏹️ Stop Recording</button>
+    </div>
+    <div id="timer">🕒 Duration: 00:00</div>
+    <video id="preview" controls></video>
+    <button class="download-btn" id="downloadBtn">📥 Download Video</button>
   </div>
-
-  <div id="timer">🕒 Duration: 00:00</div>
-  <video id="preview" controls></video>
 
   <script>
     let mediaRecorder;
@@ -119,6 +186,13 @@
     const timer = document.getElementById('timer');
     const audioSource = document.getElementById('audioSource');
     const preview = document.getElementById('preview');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    function toggleTheme() {
+      const body = document.body;
+      const current = body.getAttribute('data-theme');
+      body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    }
 
     audioToggle.onclick = () => {
       isAudioEnabled = !isAudioEnabled;
@@ -168,10 +242,13 @@
         preview.src = url;
         preview.style.display = 'block';
 
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'pro_screen_recording_HD.webm';
-        a.click();
+        downloadBtn.style.display = 'inline-block';
+        downloadBtn.onclick = () => {
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'pro_screen_recording_HD.webm';
+          a.click();
+        };
       };
 
       mediaRecorder.start();
