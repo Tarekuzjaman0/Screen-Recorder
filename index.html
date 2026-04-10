@@ -3,276 +3,1165 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pro HD Screen Recorder</title>
+  <title>ScreenFlow - Desktop Screen Recorder</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-
     :root {
-      --primary: #6200ea;
-      --accent: #03dac6;
-      --error: #cf6679;
-      --background: #121212;
-      --surface: #1f1f1f;
-      --text: #ffffff;
-      --shadow: rgba(0, 0, 0, 0.5);
+      --primary: #667eea;
+      --primary-dark: #5568d3;
+      --success: #48bb78;
+      --danger: #f56565;
+      --warning: #ed8936;
+      --bg-primary: #1a202c;
+      --bg-secondary: #2d3748;
+      --bg-tertiary: #4a5568;
+      --text-primary: #f7fafc;
+      --text-secondary: #cbd5e0;
+      --border-color: #4a5568;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
 
     [data-theme="light"] {
-      --primary: #6200ea;
-      --accent: #018786;
-      --error: #b00020;
-      --background: #ffffff;
-      --surface: #f1f1f1;
-      --text: #000000;
-      --shadow: rgba(0, 0, 0, 0.2);
+      --bg-primary: #f7fafc;
+      --bg-secondary: #edf2f7;
+      --bg-tertiary: #e2e8f0;
+      --text-primary: #1a202c;
+      --text-secondary: #4a5568;
+      --border-color: #cbd5e0;
     }
 
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
     }
 
     body {
-      font-family: 'Poppins', sans-serif;
-      background: var(--background);
-      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* ===== TITLEBAR ===== */
+    .app-titlebar {
+      background: linear-gradient(90deg, var(--bg-secondary) 0%, var(--bg-secondary) 100%);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 50px;
+      flex-shrink: 0;
+    }
+
+    .titlebar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .app-icon {
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .app-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: 0.5px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .status-badge.active {
+      background: rgba(72, 187, 120, 0.1);
+      color: var(--success);
+    }
+
+    .status-badge.recording {
+      background: rgba(245, 101, 101, 0.1);
+      color: var(--danger);
+      animation: pulse-danger 0.6s infinite;
+    }
+
+    @keyframes pulse-danger {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ccc;
+    }
+
+    .status-dot.active {
+      background: var(--success);
+    }
+
+    .status-dot.recording {
+      background: var(--danger);
+      animation: pulse-dot 0.6s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .titlebar-right {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .icon-btn:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    /* ===== MAIN CONTAINER ===== */
+    .app-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      width: 320px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+      transition: width 0.3s;
+    }
+
+    .sidebar-section {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-section:last-child {
+      border-bottom: none;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+    }
+
+    .settings-group {
+      margin-bottom: 14px;
+    }
+
+    .settings-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 8px 10px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    select:hover, input:hover {
+      border-color: var(--primary);
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+    }
+
+    select option {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    .toggle-switch {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .toggle-label {
+      font-size: 13px;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .switch {
+      position: relative;
+      width: 36px;
+      height: 20px;
+    }
+
+    .switch input {
+      display: none;
+    }
+
+    .switch-slider {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .switch-slider::before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--text-primary);
+      top: 2px;
+      left: 2px;
+      transition: all 0.3s;
+    }
+
+    .switch input:checked + .switch-slider {
+      background: var(--primary);
+    }
+
+    .switch input:checked + .switch-slider::before {
+      transform: translateX(16px);
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .recorder-panel {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      padding: 40px 20px;
-      overflow-x: hidden;
-      transition: background 0.4s, color 0.4s;
+      justify-content: center;
+      padding: 40px;
+      overflow-y: auto;
     }
 
-    h1 {
-      font-size: 2.5rem;
-      color: var(--accent);
-      margin-bottom: 20px;
+    .timer-box {
+      font-size: 72px;
+      font-weight: 300;
+      font-family: 'Courier New', monospace;
+      color: var(--primary);
+      margin-bottom: 40px;
+      letter-spacing: 8px;
       text-align: center;
-      animation: fadeInDown 0.8s ease;
-    }
-
-    .theme-toggle {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: var(--accent);
-      color: #000;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 10px;
-      cursor: pointer;
-      box-shadow: 0 4px 12px var(--shadow);
-    }
-
-    .card {
-      background-color: var(--surface);
-      border-radius: 20px;
-      padding: 30px 20px;
-      box-shadow: 0 10px 30px var(--shadow);
-      max-width: 500px;
-      width: 100%;
-      animation: fadeIn 1s ease;
-    }
-
-    .controls {
+      min-height: 100px;
       display: flex;
-      flex-direction: column;
-      gap: 15px;
-      margin-bottom: 25px;
+      align-items: center;
+      justify-content: center;
     }
 
-    .btn, select {
-      padding: 14px;
-      font-size: 16px;
+    .controls-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 40px;
+    }
+
+    .btn {
+      padding: 10px 20px;
       border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      background-color: var(--primary);
-      color: var(--text);
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px var(--shadow);
-    }
-
-    .btn:hover, select:hover {
-      background-color: var(--accent);
-      color: #000;
-      transform: translateY(-2px);
-    }
-
-    #stopBtn { background-color: var(--error); }
-    #audioToggle { background-color: var(--accent); color: #000; }
-
-    #timer {
-      text-align: center;
+      border-radius: 6px;
+      font-size: 14px;
       font-weight: 600;
-      margin-bottom: 15px;
-      color: var(--accent);
-      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-success:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--bg-tertiary);
+      border-color: var(--primary);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .preview-section {
+      display: none;
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    .preview-section.active {
+      display: block;
     }
 
     video {
-      display: none;
-      margin-top: 20px;
       width: 100%;
-      border-radius: 16px;
-      border: 3px solid var(--accent);
-      box-shadow: 0 0 25px var(--shadow);
-      animation: fadeIn 1s ease;
+      border-radius: 8px;
+      background: var(--bg-primary);
+      margin-bottom: 16px;
+      border: 1px solid var(--border-color);
+      max-height: 400px;
     }
 
-    .download-btn {
-      display: none;
-      margin-top: 15px;
+    .preview-info {
+      background: var(--bg-tertiary);
       padding: 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      margin-bottom: 16px;
+      color: var(--text-secondary);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .info-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .info-value {
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .preview-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    /* ===== ALERTS ===== */
+    .alert {
+      display: none;
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .alert.show {
+      display: flex;
+    }
+
+    .alert-success {
+      background: rgba(72, 187, 120, 0.1);
+      color: var(--success);
+      border: 1px solid rgba(72, 187, 120, 0.3);
+    }
+
+    .alert-error {
+      background: rgba(245, 101, 101, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(245, 101, 101, 0.3);
+    }
+
+    .alert-icon {
       font-size: 16px;
-      background-color: var(--accent);
-      color: #000;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      box-shadow: 0 4px 12px var(--shadow);
+      flex-shrink: 0;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
     }
 
-    @keyframes fadeInDown {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
+    ::-webkit-scrollbar-track {
+      background: transparent;
     }
 
-    @media (max-width: 600px) {
-      h1 { font-size: 1.8rem; }
-      .btn, select, .download-btn { font-size: 14px; }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 280px;
+      }
+
+      .recorder-panel {
+        padding: 30px;
+      }
+
+      .timer-box {
+        font-size: 56px;
+        letter-spacing: 4px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .app-container {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        max-height: 200px;
+        overflow-y: auto;
+      }
+
+      .sidebar-section {
+        padding: 12px;
+      }
+
+      .recorder-panel {
+        padding: 20px;
+      }
+
+      .timer-box {
+        font-size: 48px;
+        letter-spacing: 2px;
+        margin-bottom: 30px;
+      }
+
+      .controls-group {
+        width: 100%;
+      }
+
+      .btn {
+        flex: 1;
+        min-width: 120px;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .app-titlebar {
+        padding: 10px 12px;
+        height: 44px;
+      }
+
+      .app-title {
+        font-size: 12px;
+      }
+
+      .sidebar {
+        max-height: 150px;
+      }
+
+      .sidebar-section {
+        padding: 10px;
+      }
+
+      .section-title {
+        font-size: 11px;
+      }
+
+      .recorder-panel {
+        padding: 15px;
+      }
+
+      .timer-box {
+        font-size: 36px;
+        letter-spacing: 1px;
+        margin-bottom: 20px;
+      }
+
+      .controls-group {
+        gap: 8px;
+      }
+
+      .btn {
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+
+      .preview-info {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .preview-section.active {
+      animation: slideIn 0.3s ease;
     }
   </style>
 </head>
 <body data-theme="dark">
 
-  <button class="theme-toggle" onclick="toggleTheme()">🌙 Toggle Theme</button>
-
-  <h1>🎥 Pro HD Screen Recorder</h1>
-  <div class="card">
-    <div class="controls">
-      <select id="audioSource">
-        <option value="mic">🎙️ Microphone</option>
-        <option value="system">💻 System Audio</option>
-      </select>
-      <button class="btn" id="audioToggle">🔇 Mute Audio</button>
-      <button class="btn" id="startBtn">▶️ Start Recording</button>
-      <button class="btn" id="stopBtn" disabled>⏹️ Stop Recording</button>
+  <!-- TITLEBAR -->
+  <div class="app-titlebar">
+    <div class="titlebar-left">
+      <div class="app-icon">🎬</div>
+      <div class="app-title">ScreenFlow</div>
+      <div class="status-badge" id="statusBadge">
+        <div class="status-dot"></div>
+        <span id="statusText">Ready</span>
+      </div>
     </div>
-    <div id="timer">🕒 Duration: 00:00</div>
-    <video id="preview" controls></video>
-    <button class="download-btn" id="downloadBtn">📥 Download Video</button>
+    <div class="titlebar-right">
+      <button class="icon-btn" onclick="toggleTheme()" title="Toggle Theme">🌙</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <div class="app-container">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <!-- Audio Settings -->
+      <div class="sidebar-section">
+        <div class="section-title">Audio Settings</div>
+        <div class="settings-group">
+          <label class="label">Audio Source</label>
+          <select id="audioSource">
+            <option value="none">No Audio</option>
+            <option value="speaker">Speaker Only</option>
+            <option value="mic">Microphone Only</option>
+            <option value="both">Microphone + Speaker</option>
+          </select>
+        </div>
+        <div class="toggle-switch">
+          <label class="toggle-label">Audio Enhancement</label>
+          <label class="switch">
+            <input type="checkbox" id="audioEnhance" checked>
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Video Settings -->
+      <div class="sidebar-section">
+        <div class="section-title">Video Settings</div>
+        <div class="settings-group">
+          <label class="label">Quality</label>
+          <select id="videoQuality">
+            <option value="720p">720p (HD)</option>
+            <option value="1080p" selected>1080p (Full HD)</option>
+            <option value="1440p">1440p (2K)</option>
+            <option value="2160p">2160p (4K)</option>
+          </select>
+        </div>
+        <div class="settings-group">
+          <label class="label">Frame Rate</label>
+          <select id="frameRate">
+            <option value="30">30 FPS</option>
+            <option value="60" selected>60 FPS</option>
+            <option value="120">120 FPS</option>
+          </select>
+        </div>
+        <div class="toggle-switch">
+          <label class="toggle-label">Show Cursor</label>
+          <label class="switch">
+            <input type="checkbox" id="showCursor" checked>
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Recording Settings -->
+      <div class="sidebar-section">
+        <div class="section-title">Recording Settings</div>
+        <div class="settings-group">
+          <label class="label">Countdown</label>
+          <select id="countdown">
+            <option value="0">None</option>
+            <option value="3">3 Seconds</option>
+            <option value="5">5 Seconds</option>
+            <option value="10">10 Seconds</option>
+          </select>
+        </div>
+        <div class="toggle-switch">
+          <label class="toggle-label">Auto Download</label>
+          <label class="switch">
+            <input type="checkbox" id="autoDownload">
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <div class="recorder-panel">
+        <!-- Timer Display -->
+        <div class="timer-box" id="timerDisplay">00:00</div>
+
+        <!-- Alerts -->
+        <div class="alert alert-success" id="successAlert">
+          <div class="alert-icon">✓</div>
+          <div>Recording saved successfully!</div>
+        </div>
+        <div class="alert alert-error" id="errorAlert">
+          <div class="alert-icon">✕</div>
+          <div id="errorMessage"></div>
+        </div>
+
+        <!-- Main Controls -->
+        <div class="controls-group">
+          <button class="btn btn-success" id="startBtn">
+            <span>▶</span> Start
+          </button>
+          <button class="btn btn-secondary" id="pauseBtn" disabled>
+            <span>⏸</span> Pause
+          </button>
+          <button class="btn btn-danger" id="stopBtn" disabled>
+            <span>⏹</span> Stop
+          </button>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="preview-section" id="previewSection">
+          <video id="videoPreview" controls></video>
+          <div class="preview-info">
+            <div class="info-item">
+              <div class="info-label">Duration</div>
+              <div class="info-value" id="previewDuration">00:00</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">File Size</div>
+              <div class="info-value" id="previewSize">0 MB</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Format</div>
+              <div class="info-value">WebM</div>
+            </div>
+          </div>
+          <div class="preview-actions">
+            <button class="btn btn-primary btn-small" id="downloadBtn">
+              <span>📥</span> Download
+            </button>
+            <button class="btn btn-secondary btn-small" id="newRecordBtn">
+              <span>🔄</span> New Recording
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
-    let mediaRecorder;
-    let recordedChunks = [];
-    let isAudioEnabled = true;
-    let startTime;
-    let timerInterval;
-
-    const startBtn = document.getElementById('startBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const audioToggle = document.getElementById('audioToggle');
-    const timer = document.getElementById('timer');
-    const audioSource = document.getElementById('audioSource');
-    const preview = document.getElementById('preview');
-    const downloadBtn = document.getElementById('downloadBtn');
-
-    function toggleTheme() {
-      const body = document.body;
-      const current = body.getAttribute('data-theme');
-      body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
-    }
-
-    audioToggle.onclick = () => {
-      isAudioEnabled = !isAudioEnabled;
-      audioToggle.textContent = isAudioEnabled ? '🔇 Mute Audio' : '🔊 Unmute Audio';
+    // ===== STATE MANAGEMENT =====
+    const state = {
+      isRecording: false,
+      isPaused: false,
+      mediaRecorder: null,
+      recordedChunks: [],
+      recordedStream: null,
+      audioStreams: [],
+      startTime: 0,
+      pausedTime: 0,
+      timerInterval: null
     };
 
-    startBtn.onclick = async () => {
-      const audioChoice = audioSource.value;
+    const config = {
+      audioSource: 'mic',
+      audioEnhance: true,
+      videoQuality: '1080p',
+      frameRate: 60,
+      showCursor: true,
+      countdown: 0,
+      autoDownload: false
+    };
 
-      const displayStream = await navigator.mediaDevices.getDisplayMedia({
-        video: {
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-          frameRate: { ideal: 60 }
-        },
-        audio: audioChoice === 'system'
+    const qualityMap = {
+      '720p': { width: 1280, height: 720 },
+      '1080p': { width: 1920, height: 1080 },
+      '1440p': { width: 2560, height: 1440 },
+      '2160p': { width: 3840, height: 2160 }
+    };
+
+    // ===== DOM ELEMENTS =====
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const videoPreview = document.getElementById('videoPreview');
+    const previewSection = document.getElementById('previewSection');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const newRecordBtn = document.getElementById('newRecordBtn');
+    const errorAlert = document.getElementById('errorAlert');
+    const errorMessage = document.getElementById('errorMessage');
+    const successAlert = document.getElementById('successAlert');
+    const statusBadge = document.getElementById('statusBadge');
+    const statusText = document.getElementById('statusText');
+    const statusDot = statusBadge.querySelector('.status-dot');
+
+    // Settings
+    const audioSourceSelect = document.getElementById('audioSource');
+    const audioEnhanceInput = document.getElementById('audioEnhance');
+    const videoQualitySelect = document.getElementById('videoQuality');
+    const frameRateSelect = document.getElementById('frameRate');
+    const showCursorInput = document.getElementById('showCursor');
+    const countdownSelect = document.getElementById('countdown');
+    const autoDownloadInput = document.getElementById('autoDownload');
+
+    // ===== UTILITIES =====
+    function formatTime(secs) {
+      const h = Math.floor(secs / 3600);
+      const m = Math.floor((secs % 3600) / 60);
+      const s = secs % 60;
+      return h > 0 
+        ? `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+        : `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    function showError(msg) {
+      errorMessage.textContent = msg;
+      errorAlert.classList.add('show');
+      setTimeout(() => errorAlert.classList.remove('show'), 4000);
+    }
+
+    function showSuccess() {
+      successAlert.classList.add('show');
+      setTimeout(() => successAlert.classList.remove('show'), 3000);
+    }
+
+    function updateStatus(text, isRecording = false, isDot = false) {
+      statusText.textContent = text;
+      statusDot.classList.toggle('recording', isRecording);
+      statusDot.classList.toggle('active', isDot);
+    }
+
+    function updateTimer() {
+      const elapsed = Math.floor((Date.now() - state.startTime) / 1000) + state.pausedTime;
+      timerDisplay.textContent = formatTime(elapsed);
+    }
+
+    function saveConfig() {
+      const cfg = {
+        audioSource: audioSourceSelect.value,
+        audioEnhance: audioEnhanceInput.checked,
+        videoQuality: videoQualitySelect.value,
+        frameRate: parseInt(frameRateSelect.value),
+        showCursor: showCursorInput.checked,
+        countdown: parseInt(countdownSelect.value),
+        autoDownload: autoDownloadInput.checked
+      };
+      Object.assign(config, cfg);
+      localStorage.setItem('screenflow_config', JSON.stringify(cfg));
+    }
+
+    function loadConfig() {
+      const saved = localStorage.getItem('screenflow_config');
+      if (saved) {
+        try {
+          const cfg = JSON.parse(saved);
+          Object.assign(config, cfg);
+          audioSourceSelect.value = config.audioSource;
+          audioEnhanceInput.checked = config.audioEnhance;
+          videoQualitySelect.value = config.videoQuality;
+          frameRateSelect.value = config.frameRate;
+          showCursorInput.checked = config.showCursor;
+          countdownSelect.value = config.countdown;
+          autoDownloadInput.checked = config.autoDownload;
+        } catch (e) {
+          console.error('Failed to load config:', e);
+        }
+      }
+    }
+
+    function cleanupStreams() {
+      state.audioStreams.forEach(stream => {
+        stream.getTracks().forEach(track => track.stop());
       });
+      state.audioStreams = [];
+      
+      if (state.recordedStream) {
+        state.recordedStream.getTracks().forEach(track => track.stop());
+        state.recordedStream = null;
+      }
+    }
 
-      let finalStream = displayStream;
+    function generateFileName() {
+      const now = new Date();
+      const date = now.toISOString().split('T')[0];
+      const time = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+      return `Recording_${date}_${time}.webm`;
+    }
 
-      if (audioChoice === 'mic' && isAudioEnabled) {
-        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const mixedTracks = [
-          ...displayStream.getVideoTracks(),
-          ...micStream.getAudioTracks()
-        ];
-        finalStream = new MediaStream(mixedTracks);
+    // ===== RECORDING LOGIC =====
+    async function startRecording() {
+      try {
+        saveConfig();
+
+        if (config.countdown > 0) {
+          await showCountdown(config.countdown);
+        }
+
+        const quality = qualityMap[config.videoQuality];
+
+        // Get display stream
+        const displayStream = await navigator.mediaDevices.getDisplayMedia({
+          video: {
+            width: { ideal: quality.width },
+            height: { ideal: quality.height },
+            frameRate: { ideal: config.frameRate },
+            cursor: config.showCursor ? 'always' : 'never'
+          },
+          audio: false
+        });
+
+        state.recordedStream = displayStream;
+        let audioTracks = [];
+
+        // Handle audio setup
+        if (config.audioSource !== 'none') {
+          try {
+            if (config.audioSource === 'mic' || config.audioSource === 'both') {
+              const micStream = await navigator.mediaDevices.getUserMedia({
+                audio: config.audioEnhance ? {
+                  echoCancellation: true,
+                  noiseSuppression: true,
+                  autoGainControl: true
+                } : true
+              });
+              state.audioStreams.push(micStream);
+              audioTracks.push(...micStream.getAudioTracks());
+            }
+
+            if (config.audioSource === 'speaker' || config.audioSource === 'both') {
+              const audioTracks = displayStream.getAudioTracks();
+              if (audioTracks.length > 0) {
+                // System audio already included in display stream
+              }
+            }
+          } catch (e) {
+            console.warn('Microphone/audio error:', e);
+            showError('Could not access microphone. Recording without audio.');
+          }
+        }
+
+        // Create final stream
+        const videoTracks = displayStream.getVideoTracks();
+        let finalStream;
+
+        if (audioTracks.length > 0) {
+          finalStream = new MediaStream([...videoTracks, ...audioTracks]);
+        } else {
+          finalStream = new MediaStream(videoTracks);
+        }
+
+        // Setup media recorder
+        const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+          ? 'video/webm;codecs=vp9'
+          : 'video/webm';
+
+        state.mediaRecorder = new MediaRecorder(finalStream, {
+          mimeType: mimeType,
+          videoBitsPerSecond: 5000000,
+          audioBitsPerSecond: 128000
+        });
+
+        state.recordedChunks = [];
+        state.isRecording = true;
+        state.startTime = Date.now();
+        state.pausedTime = 0;
+
+        state.mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) state.recordedChunks.push(e.data);
+        };
+
+        state.mediaRecorder.onstop = handleRecordingStop;
+
+        state.mediaRecorder.start(100);
+
+        // UI Updates
+        startBtn.disabled = true;
+        pauseBtn.disabled = false;
+        stopBtn.disabled = false;
+        updateStatus('Recording...', true);
+
+        state.timerInterval = setInterval(updateTimer, 100);
+
+      } catch (error) {
+        console.error('Recording error:', error);
+        showError('Error: ' + error.message);
+        cleanupStreams();
+      }
+    }
+
+    async function showCountdown(seconds) {
+      return new Promise(resolve => {
+        let count = seconds;
+        const countDisplay = document.createElement('div');
+        countDisplay.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          font-size: 120px;
+          font-weight: 300;
+          color: ${getComputedStyle(document.documentElement).getPropertyValue('--primary')};
+          z-index: 9999;
+          font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+          text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        `;
+        document.body.appendChild(countDisplay);
+
+        const timer = setInterval(() => {
+          if (count > 0) {
+            countDisplay.textContent = count;
+            count--;
+          } else {
+            clearInterval(timer);
+            countDisplay.remove();
+            resolve();
+          }
+        }, 1000);
+      });
+    }
+
+    function togglePause() {
+      if (!state.mediaRecorder) return;
+
+      if (state.isPaused) {
+        state.mediaRecorder.resume();
+        state.startTime = Date.now() - (state.pausedTime * 1000);
+        state.isPaused = false;
+        pauseBtn.textContent = '⏸ Pause';
+        updateStatus('Recording...', true);
+      } else {
+        state.mediaRecorder.pause();
+        state.pausedTime = Math.floor((Date.now() - state.startTime) / 1000);
+        state.isPaused = true;
+        pauseBtn.textContent = '▶ Resume';
+        updateStatus('Paused', false, true);
+      }
+    }
+
+    function stopRecording() {
+      if (!state.mediaRecorder) return;
+
+      state.mediaRecorder.stop();
+      cleanupStreams();
+      clearInterval(state.timerInterval);
+
+      state.isRecording = false;
+      state.isPaused = false;
+      startBtn.disabled = false;
+      pauseBtn.disabled = true;
+      stopBtn.disabled = true;
+      pauseBtn.textContent = '⏸ Pause';
+      updateStatus('Ready', false, true);
+    }
+
+    function handleRecordingStop() {
+      const blob = new Blob(state.recordedChunks, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      const duration = Math.floor((Date.now() - state.startTime) / 1000) + state.pausedTime;
+
+      videoPreview.src = url;
+      previewSection.classList.add('active');
+      document.getElementById('previewDuration').textContent = formatTime(duration);
+      document.getElementById('previewSize').textContent = formatBytes(blob.size);
+
+      const fileName = generateFileName();
+      downloadBtn.onclick = () => {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+      };
+
+      if (config.autoDownload) {
+        downloadBtn.click();
       }
 
-      const options = {
-        mimeType: 'video/webm; codecs=vp9',
-        videoBitsPerSecond: 5_000_000
-      };
+      showSuccess();
+    }
 
-      mediaRecorder = new MediaRecorder(finalStream, options);
-      recordedChunks = [];
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) recordedChunks.push(e.data);
-      };
-
-      mediaRecorder.onstop = () => {
-        clearInterval(timerInterval);
-        const blob = new Blob(recordedChunks, { type: 'video/webm' });
-        const url = URL.createObjectURL(blob);
-
-        preview.src = url;
-        preview.style.display = 'block';
-
-        downloadBtn.style.display = 'inline-block';
-        downloadBtn.onclick = () => {
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'pro_screen_recording_HD.webm';
-          a.click();
-        };
-      };
-
-      mediaRecorder.start();
-      startBtn.disabled = true;
-      stopBtn.disabled = false;
-      startTimer();
-    };
-
-    stopBtn.onclick = () => {
-      mediaRecorder.stop();
-      stopBtn.disabled = true;
+    function resetRecording() {
+      previewSection.classList.remove('active');
+      videoPreview.src = '';
+      timerDisplay.textContent = '00:00';
+      state.recordedChunks = [];
+      state.pausedTime = 0;
       startBtn.disabled = false;
-    };
+    }
 
-    function startTimer() {
-      startTime = Date.now();
-      timerInterval = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
-        const seconds = String(elapsed % 60).padStart(2, '0');
-        timer.textContent = `🕒 Duration: ${minutes}:${seconds}`;
-      }, 1000);
+    // ===== THEME TOGGLE =====
+    function toggleTheme() {
+      const theme = document.body.getAttribute('data-theme');
+      const newTheme = theme === 'dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', newTheme);
+      localStorage.setItem('screenflow_theme', newTheme);
+    }
+
+    // ===== EVENT LISTENERS =====
+    startBtn.addEventListener('click', startRecording);
+    pauseBtn.addEventListener('click', togglePause);
+    stopBtn.addEventListener('click', stopRecording);
+    newRecordBtn.addEventListener('click', resetRecording);
+
+    [audioSourceSelect, audioEnhanceInput, videoQualitySelect, frameRateSelect, 
+     showCursorInput, countdownSelect, autoDownloadInput].forEach(el => {
+      el.addEventListener('change', saveConfig);
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (!state.isRecording) startBtn.click();
+        else pauseBtn.click();
+      }
+      if (e.code === 'KeyS' && state.isRecording) {
+        e.preventDefault();
+        stopBtn.click();
+      }
+    });
+
+    // ===== INITIALIZATION =====
+    loadConfig();
+    const savedTheme = localStorage.getItem('screenflow_theme') || 'dark';
+    document.body.setAttribute('data-theme', savedTheme);
+
+    if (!navigator.mediaDevices?.getDisplayMedia) {
+      showError('Your browser does not support screen recording');
+      startBtn.disabled = true;
     }
   </script>
-
 </body>
 </html>
